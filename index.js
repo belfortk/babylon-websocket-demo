@@ -11,24 +11,7 @@ io.on('connection', function(socket){
   console.log('a user connected');
   socket.on('file uploaded', function(fileData){
     console.log(fileData);
-    // const newFile = Buffer.from(fileData.data);
-    // const fileData = {
-    //   name: file.name,
-    //   data: newFile
-    // }
     socket.broadcast.emit('file uploaded', fileData);
-    // fs.writeFile(fileData.name, newFile, (err) => {
-    //   if(err) {
-    //     console.log(err);
-    //   }  else {
-    //     console.log(`file: ${fileData.name} written successfully`);
-    //     fs.readFile(fileData.name, (err, data) => {
-    //       if (err) throw err;
-    //       console.log(data);
-    //       socket.broadcast.emit('file uploaded', data);
-    //     });
-    //   }
-    // });
   });
   socket.on('disconnect', function(){
     console.log('user disconnected');

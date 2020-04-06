@@ -30,6 +30,8 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
+      // not passing any url since it defaults to trying to connect
+      // to the host that serves the page.  
       var socket = io();
       $('#model-input').change(function(e){
         e.preventDefault(); // prevents page reloading
@@ -100,39 +102,11 @@
             var blob = new Blob([filedata.data]);
             var url = URL.createObjectURL(blob);
             console.log(url);
-            BABYLON.SceneLoader.Append("", url, scene, function () { 
+            BABYLON.SceneLoader.Append(url, scene, function () { 
               scene.createDefaultCamera(true, true, true);
               }, undefined, undefined, ".glb");
             });
           });
-    </script>
-    <script>
-      $(function () {
-        // // not passing any url since it defaults to trying to connect
-        // // to the host that serves the page.  
-        // var socket = io();
-        // $('#model-input').change(function(e){
-        //   e.preventDefault(); // prevents page reloading
-        //   const file = e.target.files[0];
-        //   console.log(file)
-        //   const fileData = {
-        //     name: file.name,
-        //     data: file
-        //   }
-        //   socket.emit('file uploaded', fileData);
-        //   return false;
-        // });
-        // socket.on('file uploaded', function(filedata){
-        //   console.log(filedata);
-        //   $('#model').append($('<li>').text(filedata.name));
-        //   var blob = new Blob([filedata.data]);
-        //   var url = URL.createObjectURL(blob);
-        //   console.log(url);
-        //   BABYLON.SceneLoader.Append("", url, scene, function () { 
-        //     scene.createDefaultCamera(true, true, true);
-        //   }, undefined, undefined, ".obj");
-        // });
-      });
     </script>
 </body>
 </html>
