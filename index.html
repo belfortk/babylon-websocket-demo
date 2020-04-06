@@ -5,6 +5,7 @@
     <title>Babylon - Getting Started</title>
     <!--- Link to the last version of BabylonJS --->
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
     <style>
         html, body {
             overflow: hidden;
@@ -84,6 +85,8 @@
             // call the createScene function
             var scene = createScene();
 
+            console.log('first scene', scene.meshes)
+
             // run the render loop
             engine.runRenderLoop(function(){
                 scene.render();
@@ -94,19 +97,31 @@
                 engine.resize();
             });
 
-            // not passing any url since it defaults to trying to connect
+
+          function isTypedArray(obj) {
+                return !!obj && obj.byteLength !== undefined;
+          }
+
+          // not passing any url since it defaults to trying to connect
           // to the host that serves the page.  
           socket.on('file uploaded', function(filedata){
+            scene.meshes.forEach(mesh => {
+              mesh.dispose();
+            });
             console.log(filedata);
+            console.log(filedata.data);
             $('#model').append($('<li>').text(filedata.name));
             var blob = new Blob([filedata.data]);
             var url = URL.createObjectURL(blob);
             console.log(url);
-            BABYLON.SceneLoader.Append(url, scene, function () { 
+            BABYLON.SceneLoader.Append("", url, scene, function () { 
               scene.createDefaultCamera(true, true, true);
               }, undefined, undefined, ".glb");
+              console.log(scene.meshes)
             });
           });
+
+
     </script>
 </body>
 </html>
