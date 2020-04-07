@@ -7,10 +7,14 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
+let file;
 io.on('connection', function(socket){
   console.log('a user connected');
+  if(file){
+    socket.emit('file uploaded', file);
+  }
   socket.on('file uploaded', function(fileData){
-    console.log(fileData);
+    file = fileData;
     socket.broadcast.emit('file uploaded', fileData);
   });
   socket.on('disconnect', function(){
