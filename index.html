@@ -5,7 +5,8 @@
     <title>Babylon - Websocket Demo</title>
     <!--- Link to the last version of BabylonJS --->
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+    <!--- Link to the last version of BabylonJS loaders --->
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>    
     <style>
         html, body {
             overflow: hidden;
@@ -13,23 +14,36 @@
             height  : 100%;
             margin  : 0;
             padding : 0;
+            font-family: "Helvetica", "Arial", sans-serif;
+            line-height: 1.5;
+            color: #555;
+            background: #eee;
         }
-
+        h1{
+          color: #333;
+          margin-top: 0;
+          padding-top: 1rem;
+        }
         #renderCanvas {
             width   : 100%;
             height  : 50%;
             touch-action: none;
         }
+        #upload-model{
+          height  : 50%;
+          padding-left: 6rem;
+        }
     </style>
 </head>
 <body>
     <canvas id="renderCanvas"></canvas>
-    <h1>Upload Model</h1>
-    <ul id="model"></ul>
-    <input type="file" name="model" id="model-input">
+    <div id="upload-model">
+      <h1>Upload Model</h1>
+      <ul id="model-list"></ul>
+      <input type="file" name="model" id="model-input">
+    </div>
     
     <script src="/socket.io/socket.io.js"></script>
-    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
         window.addEventListener('DOMContentLoaded', function(){          
             // get the canvas DOM element
@@ -61,6 +75,9 @@
                 // move the sphere upward 1/2 of its height
                 sphere.position.y = 1;
 
+                // change background color
+                scene.clearColor = new BABYLON.Color3(.6,.6,.6);
+
                 // create a built-in "ground" shape;
                 var ground = BABYLON.Mesh.CreateGround('ground1', 6, 6, 2, scene);
 
@@ -86,47 +103,50 @@
             // not passing any url since it defaults to trying to connect
             // to the host that serves the page.  
             var socket = io();
-            $('#model-input').change(function(e){
+            
+            document.getElementById("model-input").addEventListener('change',(e) => {
                 e.preventDefault(); // prevents page reloading
                 const file = e.target.files[0];
-                console.log(file.name.split('.'))
                 const fileData = {
                   name: file.name,
                   data: file
                 };
-                const fileExtension = '.' + file.name.split('.')[1];
+                const fileExtension = getFileExtension(file.name)
                 socket.emit('file uploaded', fileData);
-                $('#model').append($('<li>').text(file.name));
-                var blob = new Blob([file]);
-                var url = URL.createObjectURL(blob);
-                console.log(url);
-                scene.meshes.forEach(mesh => {
-                  mesh.dispose();
-                });
-                BABYLON.SceneLoader.AppendAsync("", url, scene, undefined, fileExtension).then(function () { 
-                  scene.createDefaultCamera(true, true, true);
-                  });
-                  console.log(scene.meshes)
+                addModelNameToList(file.name)
+                addModelToScene(file, fileExtension, scene)
                 return false;
-              });
+            });
 
             socket.on('file uploaded', function(filedata){
-              // clear old meshes
-                scene.meshes.forEach(mesh => {
-                  mesh.dispose();
-                });
-                console.log(filedata);
-                console.log(filedata.data);
-                $('#model').append($('<li>').text(filedata.name));
-                var blob = new Blob([filedata.data]);
-                var url = URL.createObjectURL(blob);
-                console.log(url);
-                BABYLON.SceneLoader.Append("", url, scene, function () { 
-                  scene.createDefaultCamera(true, true, true);
-                  }, undefined, undefined, ".glb");
-                  console.log(scene.meshes)
+              addModelNameToList(filedata.name)
+              addModelToScene(filedata.data, getFileExtension(filedata.name), scene)
+            });
+
+
+            function getFileExtension(fileName) {
+              return '.' + fileName.split('.')[1]
+            }
+
+            function addModelNameToList(modelName) {
+              const fileNameElement = document.createElement("li");
+              fileNameElement.textContent = modelName
+              document.getElementById("model-list").append(fileNameElement);
+            }
+
+            function addModelToScene(file, fileExtension, scene) {
+              console.log(fileExtension)
+              scene.meshes.forEach(mesh => {
+                mesh.dispose();
               });
-          });
+              var blob = new Blob([file]);
+              var url = URL.createObjectURL(blob);
+              console.log(url);
+              BABYLON.SceneLoader.Append("", url, scene, function () { 
+                scene.createDefaultCamera(true, true, true);
+                }, undefined, undefined, fileExtension);
+              }
+            });
     </script>
 </body>
 </html>

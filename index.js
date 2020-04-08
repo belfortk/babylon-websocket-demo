@@ -1,28 +1,59 @@
+// imports
 const app = require('express')();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http)
 const fs = require('fs');
 
-app.get('/', function(req, res){
+// app state
+let currentFile;
+let clientCount = 0;
+const currentConnectedClients = [];
+
+// let me us know server is running
+http.listen(3000, () => {
+  console.log('listening on *:3000');
+});
+
+// send html page
+app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-let file;
-io.on('connection', function(socket){
-  console.log('a user connected');
-  if(file){
-    socket.emit('file uploaded', file);
+// socket.io listener
+io.on('connection', (socket) => {
+  const id = clientCount;
+  addClient(currentConnectedClients, id)
+
+  // if there is already a model being shared, new connected clients will get it
+  if(currentFile){
+    socket.emit('file uploaded', currentFile);
   }
-  socket.on('file uploaded', function(fileData){
-    file = fileData;
+
+  // when a new model is shared, send to all other connected clients
+  socket.on('file uploaded', (fileData) => {
+    currentFile = fileData;
     socket.broadcast.emit('file uploaded', fileData);
   });
-  socket.on('disconnect', function(){
-    console.log('user disconnected');
+
+  // when a user leaves, remove them from the list
+  socket.on('disconnect', () => {
+    removeClient(currentConnectedClients, id);
+
+    // if there are no users left, reset the file to null
+    if(currentConnectedClients.length === 0){
+      currentFile = null;
+    }
   });
 });
 
-http.listen(3000, function(){
-  console.log('listening on *:3000');
-});
+// helper functions
+const addClient = (clientList, id) => {
+  clientCount = clientCount + 1;
+  clientList.push(id);
+}
+
+const removeClient = (clientList, clientId) => {
+  const indexOfClient = clientList.indexOf(clientId);
+  return clientList.splice(indexOfClient, 1)
+}
 
