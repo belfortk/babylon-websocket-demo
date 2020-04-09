@@ -7,6 +7,8 @@
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <!--- Link to the last version of BabylonJS loaders --->
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>    
+    <!--- Import Socket.IO  --->
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         html, body {
             overflow: hidden;
@@ -42,8 +44,6 @@
       <ul id="model-list"></ul>
       <input type="file" name="model" id="model-input">
     </div>
-    
-    <script src="/socket.io/socket.io.js"></script>
     <script>
         window.addEventListener('DOMContentLoaded', function(){          
             // get the canvas DOM element
@@ -87,8 +87,6 @@
 
             // call the createScene function
             var scene = createScene();
-
-            console.log('first scene', scene.meshes)
 
             // run the render loop
             engine.runRenderLoop(function(){
@@ -135,14 +133,12 @@
             }
 
             function addModelToScene(file, fileExtension, scene) {
-              console.log(fileExtension)
               scene.meshes.forEach(mesh => {
                 mesh.dispose();
               });
               var blob = new Blob([file]);
               var url = URL.createObjectURL(blob);
-              console.log(url);
-              BABYLON.SceneLoader.Append("", url, scene, function () { 
+              BABYLON.SceneLoader.ImportMesh('', "", url, scene, function () { 
                 scene.createDefaultCamera(true, true, true);
                 }, undefined, undefined, fileExtension);
               }
